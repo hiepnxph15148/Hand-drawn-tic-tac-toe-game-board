@@ -284,6 +284,32 @@ ol {
   font: inherit;
   margin-top: 1.5rem;
 }
+.difficulty-select {
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid #FFD700; /* Gold color for the border */
+  background-color: #333; /* Dark background similar to the image */
+  color: #FFD700; /* Gold color for the text */
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.difficulty-select:focus {
+  border-color: #FFA500; /* Slightly lighter color when focused */
+}
+
+.difficulty-select option {
+  background-color: #333; /* Matching background color */
+  color: #FFD700; /* Matching text color */
+}
+
+/* Optional: Style the label text */
+label {
+  color: #FFD700; /* Gold color for the label text */
+  font-weight: bold;
+}
 
 @keyframes slide-in-from-left {
   0% {

@@ -7,7 +7,7 @@ import GameOver from "./components/GameOver";
 
 const PLAYERS = {
   X: 'Player 1',
-  O: 'Bot' // Bot sẽ chơi như Player 2
+  O: 'Bot' // Bot will play as Player 2
 };
 
 const INITIAL_GAME_BOARD = [
@@ -17,18 +17,15 @@ const INITIAL_GAME_BOARD = [
 ];
 
 function deriveActivePlayer(gameTurns) {
-  let currentPlayer = 'X'; // Giả sử người chơi hiện tại là 'X' mặc định.
+  let currentPlayer = 'X'; // Assume the current player is 'X' by default.
 
-  // Nếu có bất kỳ lượt chơi nào trong trò chơi và lượt chơi gần đây nhất được thực hiện bởi 'X',
-  // thì lượt tiếp theo sẽ là của 'O'.
   if (gameTurns.length > 0 && gameTurns[0].player === 'X') {
     currentPlayer = 'O';
   }
-  return currentPlayer; // Trả về người chơi nên thực hiện lượt tiếp theo.
+  return currentPlayer; // Return the player who should make the next move.
 }
 
-// check for a winner
-function deriveWinner(gameBoard,players){
+function deriveWinner(gameBoard, players) {
   let winner = null;
   for (const combination of WINNING_COMBINATIONS) {
     const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
@@ -44,8 +41,8 @@ function deriveWinner(gameBoard,players){
   }
   return winner;
 }
-// khi restarts game thì tạo mới 
-function deriveGameBoard(gameTurns){
+
+function deriveGameBoard(gameTurns) {
   let gameBoard = [...INITIAL_GAME_BOARD.map(array => [...array])];
   for (const turn of gameTurns) {
     const { square, player } = turn;
@@ -58,12 +55,13 @@ function deriveGameBoard(gameTurns){
 function App() {
   const [gameTurns, setGameTurns] = useState([]);
   const [players, setPlayers] = useState(PLAYERS);
+  const [difficulty, setDifficulty] = useState('Easy'); // Manage difficulty level
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
   const winner = deriveWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;
 
-  // Hàm xử lý bước đi của bot
+  // Bot logic based on difficulty
   function handleBotMove() {
     const emptySquares = [];
     gameBoard.forEach((row, rowIndex) => {
@@ -75,18 +73,60 @@ function App() {
     });
 
     if (emptySquares.length > 0) {
-      const randomSquare = emptySquares[Math.floor(Math.random() * emptySquares.length)];
-      handlePlayerChange(randomSquare.row, randomSquare.col);
+      let botMove;
+
+      if (difficulty === 'Easy') {
+        botMove = emptySquares[Math.floor(Math.random() * emptySquares.length)];
+      } else if (difficulty === 'Medium' || difficulty === 'Hard') {
+        // Medium: Try to block the opponent
+        botMove = findBestMove(gameBoard, 'X') || emptySquares[Math.floor(Math.random() * emptySquares.length)];
+
+        // Hard: Prioritize winning
+        if (difficulty === 'Hard') {
+          botMove = findBestMove(gameBoard, 'O') || botMove;
+        }
+      }
+
+      handlePlayerChange(botMove.row, botMove.col);
     }
+  }
+
+  function findBestMove(board, player) {
+    for (const combination of WINNING_COMBINATIONS) {
+      const [a, b, c] = combination;
+      const [rowA, colA] = [a.row, a.column];
+      const [rowB, colB] = [b.row, b.column];
+      const [rowC, colC] = [c.row, c.column];
+
+      if (
+        board[rowA][colA] === player &&
+        board[rowB][colB] === player &&
+        board[rowC][colC] === null
+      ) {
+        return { row: rowC, col: colC };
+      } else if (
+        board[rowA][colA] === player &&
+        board[rowC][colC] === player &&
+        board[rowB][colB] === null
+      ) {
+        return { row: rowB, col: colB };
+      } else if (
+        board[rowB][colB] === player &&
+        board[rowC][colC] === player &&
+        board[rowA][colA] === null
+      ) {
+        return { row: rowA, col: colA };
+      }
+    }
+    return null;
   }
 
   useEffect(() => {
     if (activePlayer === 'O' && !winner && !hasDraw) {
-      handleBotMove();
+      setTimeout(handleBotMove, 1000); // 1-second delay for bot move
     }
   }, [gameTurns]);
 
-  // Cập nhật trạng thái người chơi
   function handlePlayerChange(rowIndex, colIndex) {
     setGameTurns((prevTurns) => {
       const currentPlayer = deriveActivePlayer(prevTurns);
@@ -97,20 +137,34 @@ function App() {
       return updatedTurns;
     });
   }
-  // nút restart game
+
   function handleRestartGame() {
     setGameTurns([]);
   }
-  // nút đ��i tên người chơi
+
   function handlePlayerNameChange(symbol, newName) {
     setPlayers(prevPlayers => {
       return { ...prevPlayers, [symbol]: newName };
     });
   }
 
+  function handleDifficultyChange(event) {
+    setDifficulty(event.target.value);
+  }
+
   return (
     <main>
       <div id="game-container">
+        <div>
+          <label>
+            Select Difficulty: 
+            <select  className="difficulty-select" value={difficulty} onChange={handleDifficultyChange}>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </label>
+        </div>
         <ol id="players" className="highlight-player">
           <Player initialName={PLAYERS.X}
             symbol={'X'}
