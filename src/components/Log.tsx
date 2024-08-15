@@ -1,5 +1,8 @@
 import React from "react";
 
+
+// hiện vị trí lần lượt của người chơi bên dưới màn hình 
+
 const Log = ({ turns }) => {
   return (
     <ol id="log">

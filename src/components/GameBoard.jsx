@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 const GameBoard = ({ onSelectSquare, board }) => {
 
 
-
     // const [gameBoard,setGameBoard] = useState(initialGameBoard)   
     // function handleSelectSquare(rowIndex,colIndex){
     //     setGameBoard((prevGameBoard) =>{
@@ -14,6 +13,10 @@ const GameBoard = ({ onSelectSquare, board }) => {
     //     })
     //     onSelectSquare();
     // }
+
+
+
+    // Create main game board with square selection 
     return (
         <ol id='game-board'>
             {board.map((row, rowIndex) =>

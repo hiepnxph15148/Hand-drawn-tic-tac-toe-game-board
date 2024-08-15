@@ -1,5 +1,6 @@
 import React from 'react'
 
+// View hiển thị khi thao tác xong lượt chơi.
 
 const GameOver = ({ winner ,onRestart}) => {
     return (
