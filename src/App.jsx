@@ -1,20 +1,20 @@
-import { useState } from "react"
-import GameBoard from "./components/GameBoard"
-import Player from "./components/Player"
+import { useState, useEffect } from "react";
+import GameBoard from "./components/GameBoard";
+import Player from "./components/Player";
 import Log from "./components/Log";
-import { WINNING_COMBINATIONS } from "./winning-combinations"
-import GameOver from "./components/GameOver"
+import { WINNING_COMBINATIONS } from "./winning-combinations";
+import GameOver from "./components/GameOver";
 
-const PLAYERS ={
+const PLAYERS = {
   X: 'Player 1',
-  O: 'Player 2'
+  O: 'Bot' // Bot sẽ chơi như Player 2
 };
-//----------------------------------------------------------------
+
 const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
   [null, null, null],
-]
+];
 
 function deriveActivePlayer(gameTurns) {
   let currentPlayer = 'X'; // Giả sử người chơi hiện tại là 'X' mặc định.
@@ -30,18 +30,15 @@ function deriveActivePlayer(gameTurns) {
 // check for a winner
 function deriveWinner(gameBoard,players){
   let winner = null;
-  // Check for a winner
   for (const combination of WINNING_COMBINATIONS) {
     const firstSquareSymbol = gameBoard[combination[0].row][combination[0].column];
     const secondSquareSymbol = gameBoard[combination[1].row][combination[1].column];
     const thirdSquareSymbol = gameBoard[combination[2].row][combination[2].column];
-    // Check if there is a winning combination
     if (
       firstSquareSymbol &&
       firstSquareSymbol === secondSquareSymbol &&
       firstSquareSymbol === thirdSquareSymbol
     ) {
-      // Name player wins
       winner = players[firstSquareSymbol];
     }
   }
@@ -59,21 +56,38 @@ function deriveGameBoard(gameTurns){
 }
 
 function App() {
-  const [gameTurns, setGameTurns] = useState([])
-  
-  const [players, setPlayers] = useState(PLAYERS)
-
-  //const[activePlayer,setActivePlayer] = useState('X')
+  const [gameTurns, setGameTurns] = useState([]);
+  const [players, setPlayers] = useState(PLAYERS);
   const activePlayer = deriveActivePlayer(gameTurns);
-  // khi restarts game thì tạo mới 
-  const gameBoard = deriveGameBoard (gameTurns);
-  // Check for a winner
-  const winner = deriveWinner(gameBoard,players);
-  // Check for a draw
+  const gameBoard = deriveGameBoard(gameTurns);
+  const winner = deriveWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;
-  // nút thao tác chơi
+
+  // Hàm xử lý bước đi của bot
+  function handleBotMove() {
+    const emptySquares = [];
+    gameBoard.forEach((row, rowIndex) => {
+      row.forEach((square, colIndex) => {
+        if (square === null) {
+          emptySquares.push({ row: rowIndex, col: colIndex });
+        }
+      });
+    });
+
+    if (emptySquares.length > 0) {
+      const randomSquare = emptySquares[Math.floor(Math.random() * emptySquares.length)];
+      handlePlayerChange(randomSquare.row, randomSquare.col);
+    }
+  }
+
+  useEffect(() => {
+    if (activePlayer === 'O' && !winner && !hasDraw) {
+      handleBotMove();
+    }
+  }, [gameTurns]);
+
+  // Cập nhật trạng thái người chơi
   function handlePlayerChange(rowIndex, colIndex) {
-    //setActivePlayer((curActivePlayer) =>curActivePlayer === 'X'? 'O' : 'X')
     setGameTurns((prevTurns) => {
       const currentPlayer = deriveActivePlayer(prevTurns);
       const updatedTurns = [
@@ -90,7 +104,7 @@ function App() {
   // nút đ��i tên người chơi
   function handlePlayerNameChange(symbol, newName) {
     setPlayers(prevPlayers => {
-      return { ...prevPlayers,[symbol]: newName };
+      return { ...prevPlayers, [symbol]: newName };
     });
   }
 
@@ -115,7 +129,7 @@ function App() {
       </div>
       <Log turns={gameTurns} />
     </main>
-  )
+  );
 }
 
 export default App;
